@@ -22,6 +22,8 @@ La variante de Render ejecuta **FastAPI y el Random Forest publicado de Copper C
 
    `COPPER_CREEK_LOCAL_MODEL=true` ya viene en la imagen. **No agregues `ML_INFERENCE_URL`** para esta variante. `DATABASE_URL_SYNC` solo se necesita si ejecutarás Alembic; el arranque normal crea las tablas mediante SQLAlchemy asíncrono. Guarda las credenciales únicamente en Render, nunca en GitHub ni en el chat.
 
+   `INITIAL_ADMIN_EMAIL` y `INITIAL_ADMIN_PASSWORD` crean la cuenta administradora cuando la tabla de usuarios está vacía. No se envían al frontend ni rellenan el formulario de inicio de sesión. Si la cuenta ya existe, cambiar esas variables no modifica su contraseña. El login no muestra cuentas ni contraseñas de demostración.
+
 5. Crea el Web Service. Cuando Render termine, comprueba `https://TU-SERVICIO.onrender.com/health` y `https://TU-SERVICIO.onrender.com/api/copper-creek/model-info`. El primero debe responder `status: ok` y el segundo debe mostrar `model_name: Random Forest`.
 
 La imagen verifica durante la construcción que el modelo guardado se puede cargar con las versiones de librerías de sus metadatos. Si falla ese paso, revisa el registro de construcción antes de configurar Vercel. El visor 3D y la consulta de ley usan `/api/copper-creek/predict` en este mismo servicio. Entrenar otro modelo en Streamlit no modifica esta imagen: habría que publicar el nuevo artefacto y desplegar otra versión.

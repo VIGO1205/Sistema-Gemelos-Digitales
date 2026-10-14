@@ -3,15 +3,6 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, Mail, AlertCircle, Cpu, ShieldCheck, Activity, Layers } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const DEMO_USERS = [
-  { email: 'admin@m6gemelo.cl', password: 'AdminM6*2026', role: 'ADMIN', name: 'Administrador' },
-  { email: 'qp.senior@m6gemelo.cl', password: 'QPSenior*2026', role: 'QP Senior', name: 'Dra. Elena Vásquez' },
-  { email: 'geo.junior@m6gemelo.cl', password: 'GeoJunior*2026', role: 'Geólogo Junior', name: 'Sofía Alarcón' },
-  { email: 'planificacion@m6gemelo.cl', password: 'Planifica*2026', role: 'Planificación', name: 'Ing. Carlos Mendoza' },
-  { email: 'supervisor@m6gemelo.cl', password: 'Supervisor*2026', role: 'Supervisor', name: 'Marco Arismendi' },
-  { email: 'auditor@m6gemelo.cl', password: 'Auditor*2026', role: 'Auditor / Viewer', name: 'Dr. Alejandro Morales' },
-];
-
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
@@ -31,12 +22,6 @@ export const LoginPage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const fillDemo = (u: typeof DEMO_USERS[0]) => {
-    setEmail(u.email);
-    setPassword(u.password);
-    setError('');
   };
 
   return (
@@ -221,34 +206,6 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Quick Demo Selector */}
-          {import.meta.env.DEV && <div className="mt-10 pt-8 border-t border-slate-200">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
-              Cuentas de Demostración
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {DEMO_USERS.map((u, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => fillDemo(u)}
-                  type="button"
-                  className="flex items-center gap-3 p-2.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 hover:border-amber-500/60 rounded-xl text-left transition-all duration-150 group"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-700 group-hover:bg-amber-500 group-hover:text-slate-950 flex items-center justify-center text-xs font-bold shrink-0 transition-colors">
-                    {u.name.charAt(0)}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-semibold text-slate-800 group-hover:text-slate-950 truncate">
-                      {u.name}
-                    </div>
-                    <div className="text-[10px] text-slate-500 truncate font-mono">
-                      {u.role}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>}
         </div>
       </motion.div>
     </div>
