@@ -21,9 +21,15 @@ RUN pip install --no-cache-dir torch==2.14.0 torchvision==0.29.0 --index-url htt
 
 COPY . .
 
+# El despliegue usa el estimador Copper Creek ya publicado en Git.
+# Fallar en la construccion si falta o no es compatible con estas dependencias.
+RUN python -c "import model_registry; bundle, metadata = model_registry.load_copper_creek_winner(); assert bundle is not None and metadata is not None, 'Falta el modelo ganador Copper Creek'"
+
 EXPOSE 8502
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD python -c "import urllib.request,sys; urllib.request.urlopen('http://127.0.0.1:8502/health', timeout=4); sys.exit(0)" || exit 1
+ENV PORT=8502
 
-CMD ["uvicorn", "serving:app", "--host", "0.0.0.0", "--port", "8502"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('PORT','8502')+'/health', timeout=4)" || exit 1
+
+CMD ["sh", "-c", "uvicorn serving:app --host 0.0.0.0 --port ${PORT:-8502}"]

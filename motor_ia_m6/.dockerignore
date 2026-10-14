@@ -2,6 +2,5 @@ venv/
 __pycache__/
 *.pyc
 .git/
-model_artifacts/
 .pytest_cache/
 streamlit_dir/

@@ -2,6 +2,8 @@
 
 El proyecto tiene tres servicios de ejecución: React/Vite, FastAPI y el motor de inferencia, además de PostgreSQL. Vercel publica el **frontend**. La API, el motor y la base de datos necesitan un alojamiento público aparte; sin ellos, la página de inicio de sesión y las vistas de datos no pueden funcionar.
 
+Esta primera publicación utiliza el modelo ganador de Copper Creek ya guardado en `motor_ia_m6/model_artifacts/copper_creek_winner.joblib`. Streamlit no necesita estar desplegado para servir estas predicciones. El servicio de inferencia incorpora el artefacto en su imagen y comprueba que se puede cargar durante la construcción. Entrenar otro modelo en Streamlit no actualizará automáticamente esta imagen: para cambiar el modelo de producción habrá que publicar un nuevo artefacto y volver a desplegar el motor.
+
 ## 1. Publicar la API y el motor
 
 Despliega `backend/`, `motor_ia_m6/` y PostgreSQL en un servidor que admita procesos persistentes o contenedores. El motor necesita los archivos de `motor_ia_m6/model_artifacts/`; el backend necesita `backend/data/copper_creek_mammoth.json`. En el backend configura `ML_INFERENCE_URL` con la dirección interna del motor.
