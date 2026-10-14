@@ -1,0 +1,51 @@
+# Motor IA M-6 - Gemelo Digital Predictivo
+# Requisitos para entrenamiento y comparacion de 5 modelos
+
+# Framework principal
+streamlit>=1.40.0
+pandas>=2.2.3
+numpy>=1.26.4
+scipy>=1.14.0
+
+# Machine Learning (versiones con wheels para Windows)
+scikit-learn>=1.5.1
+xgboost>=2.1.1
+lightgbm>=4.5.0
+
+# Deep Learning
+torch>=2.4.0
+torchvision>=0.19.0
+
+# Geostatistica
+pykrige>=1.7.2
+
+# Base de Datos
+psycopg2-binary>=2.9.9
+sqlalchemy>=2.0.32
+
+# XAI - Explicabilidad
+shap>=0.46.0
+
+# Optimizacion de hiperparametros
+optuna>=3.6.1
+
+# Visualizacion
+matplotlib>=3.9.2
+seaborn>=0.13.2
+plotly>=5.23.0
+
+# Reportes
+fpdf2>=2.8.1
+openpyxl>=3.1.5
+xlsxwriter>=3.2.0
+
+# Utilidades
+python-dotenv>=1.0.1
+joblib>=1.4.2
+tqdm>=4.66.5
+
+# Estadistica
+statsmodels>=0.14.2
+
+# Configuracion
+pyyaml>=6.0.2

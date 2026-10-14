@@ -1,0 +1,46 @@
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+.vercel/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+
+# Local recovery and unpublished article drafts
+.recovery/
+entrega/
+plantilla_revista_RIAI/
+GD.docx
+
+# Training cache
+motor_ia_m6/data/processed/
+
+# Backend Python
+backend/__pycache__/
+backend/*.pyc
+backend/.env
+backend/alembic/versions/*.py
+!backend/alembic/versions/.gitkeep
+
+# Motor IA Python
+motor_ia_m6/venv/
+motor_ia_m6/__pycache__/
+motor_ia_m6/**/*.pyc
+motor_ia_m6/data/raw/*.csv
+motor_ia_m6/data/raw/*.xlsx
+motor_ia_m6/data/processed/*.csv
+motor_ia_m6/data/processed/*.pkl
+motor_ia_m6/reports/*.png
+motor_ia_m6/reports/*.pdf
+motor_ia_m6/.env

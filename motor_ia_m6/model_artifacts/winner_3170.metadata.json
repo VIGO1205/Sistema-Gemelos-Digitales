@@ -1,0 +1,23 @@
+{
+  "bench": 3170,
+  "model_name": "XGBoost",
+  "features": [
+    "x",
+    "z",
+    "cu_base",
+    "predicted_bayesian",
+    "tonnage_norm",
+    "days_from_start",
+    "prev_grade_avg"
+  ],
+  "metrics": {
+    "rmse": 0.056326796072509996,
+    "r2": 0.8850298108017215,
+    "mae": 0.04137201615742276,
+    "mape": 4.368336305213762,
+    "bias": 0.02369944470269338,
+    "composite_score": 0.7275013666443941
+  },
+  "exported_at": "2026-09-16T21:36:35.180303+00:00",
+  "artifact": "winner_3170.joblib"
+}

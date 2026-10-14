@@ -1,0 +1,210 @@
+{
+  "project": "Copper Creek - Mammoth",
+  "mode": "exploratory_block_grade",
+  "model_name": "Random Forest",
+  "features": [
+    "x",
+    "y",
+    "z"
+  ],
+  "target": "Cu medido (% Cu) en composites ~6 m",
+  "validation": "5 folds con sondajes completos no vistos; mismas muestras con soporte IDW3",
+  "sample_count": 2480,
+  "hole_count": 164,
+  "invalid_cu_rows": 181,
+  "source_hashes": {
+    "copper-creek-database-collars-2026-january(Copper Creek Database - Collars).csv": "187ecc97fba92998016742d154501a7441c57eb41bd5975d36159f64a30e635e",
+    "copper-creek-database-surveys-2026-january(Copper Creek Database - Surveys).csv": "013ac7aa6848bde3f3b4e821c662727ca1b2aa545a0c9a576895e5b6d8622ec1",
+    "copper-creek-database-assays-2026-january(Copper Creek Database - Assays ).csv": "fe9bf5a8042b9eabfbb674e06743243aae1be32dbe3e1c638206156cb81cb225"
+  },
+  "library_versions": {
+    "numpy": "2.2.6",
+    "scikit-learn": "1.7.2",
+    "xgboost": "3.4.1",
+    "joblib": "1.5.2"
+  },
+  "coordinate_bounds": {
+    "x": {
+      "min": 548131.0464396445,
+      "max": 548989.7348001538
+    },
+    "y": {
+      "min": 3623410.359757101,
+      "max": 3624429.6785090105
+    },
+    "z": {
+      "min": 1120.0231169609706,
+      "max": 1340.6619237886466
+    }
+  },
+  "support_rule": {
+    "max_distance_m": 120.0,
+    "min_holes": 3,
+    "max_holes": 8
+  },
+  "coordinate_origin": [
+    548470.0,
+    3623920.0,
+    1250.0
+  ],
+  "comparison": {
+    "IDW3": {
+      "mean_rmse": 0.7433987926659231,
+      "mean_mae": 0.31533632914546095,
+      "mean_r2": -0.4841898618983622,
+      "folds": [
+        {
+          "fold": 1,
+          "test_holes": 32,
+          "test_samples": 496,
+          "supported_samples": 411,
+          "rmse": 0.6927965106470069,
+          "mae": 0.2642207533439309,
+          "r2": 0.5170944992981023
+        },
+        {
+          "fold": 2,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 424,
+          "rmse": 0.7400168225008088,
+          "mae": 0.3187678099932331,
+          "r2": 0.6446382418700206
+        },
+        {
+          "fold": 3,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 443,
+          "rmse": 0.7853459479904823,
+          "mae": 0.32702071631069396,
+          "r2": 0.6735199087715447
+        },
+        {
+          "fold": 4,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 478,
+          "rmse": 0.484684558952918,
+          "mae": 0.23529198894530282,
+          "r2": -3.963941956995659
+        },
+        {
+          "fold": 5,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 470,
+          "rmse": 1.0141501232383998,
+          "mae": 0.4313803771341438,
+          "r2": -0.2922600024358195
+        }
+      ]
+    },
+    "Random Forest": {
+      "mean_rmse": 0.5840607071745251,
+      "mean_mae": 0.24343965702336118,
+      "mean_r2": 0.38262466105072196,
+      "folds": [
+        {
+          "fold": 1,
+          "test_holes": 32,
+          "test_samples": 496,
+          "supported_samples": 411,
+          "rmse": 0.6638063721022994,
+          "mae": 0.26010993198816235,
+          "r2": 0.5566633827503822
+        },
+        {
+          "fold": 2,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 424,
+          "rmse": 0.6972268255573989,
+          "mae": 0.28214626875329873,
+          "r2": 0.6845462597657905
+        },
+        {
+          "fold": 3,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 443,
+          "rmse": 0.7427183560221999,
+          "mae": 0.29994536649614123,
+          "r2": 0.7079998978132915
+        },
+        {
+          "fold": 4,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 478,
+          "rmse": 0.2816862435695198,
+          "mae": 0.15781462599194973,
+          "r2": -0.6766391499875839
+        },
+        {
+          "fold": 5,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 470,
+          "rmse": 0.5348657386212073,
+          "mae": 0.21718209188725393,
+          "r2": 0.6405529149117295
+        }
+      ]
+    },
+    "XGBoost": {
+      "mean_rmse": 0.6130836470629596,
+      "mean_mae": 0.2710915212501631,
+      "mean_r2": 0.1475033189733131,
+      "folds": [
+        {
+          "fold": 1,
+          "test_holes": 32,
+          "test_samples": 496,
+          "supported_samples": 411,
+          "rmse": 0.6199850350499928,
+          "mae": 0.27677911414586104,
+          "r2": 0.6132652629736608
+        },
+        {
+          "fold": 2,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 424,
+          "rmse": 0.7609052465101641,
+          "mae": 0.328834477464473,
+          "r2": 0.6242935403427244
+        },
+        {
+          "fold": 3,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 443,
+          "rmse": 0.7301036445921554,
+          "mae": 0.3034620253977605,
+          "r2": 0.7178346239671395
+        },
+        {
+          "fold": 4,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 478,
+          "rmse": 0.3625707130172428,
+          "mae": 0.20524417187079855,
+          "r2": -1.777753909612557
+        },
+        {
+          "fold": 5,
+          "test_holes": 33,
+          "test_samples": 496,
+          "supported_samples": 470,
+          "rmse": 0.5918535961452429,
+          "mae": 0.24113781737192283,
+          "r2": 0.5598770771955974
+        }
+      ]
+    }
+  },
+  "exported_at": "2026-10-07T03:23:37.657826+00:00",
+  "limitations": "No hay sólidos oficiales del tajo, dominios, densidades medidas ni datos de planta. No valida recursos ni despacho."
+}

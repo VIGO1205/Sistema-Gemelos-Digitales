@@ -1,0 +1,13 @@
+# Motor IA M-6 - requisitos del servicio de inferencia (FastAPI en vivo)
+# El modelo entrenado (joblib) se ejecuta aqui bajo demanda, sin Streamlit.
+
+-r requirements.txt
+# Versiones del entorno que exportó el experimento GeoMet publicado.
+# Los artefactos joblib requieren las mismas versiones al cargar el modelo.
+numpy==2.2.6
+scikit-learn==1.7.2
+xgboost==3.4.1
+pykrige==1.7.3
+joblib==1.5.2
+fastapi>=0.115.0
+uvicorn>=0.30.0

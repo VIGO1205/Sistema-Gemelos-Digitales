@@ -1,0 +1,6 @@
+{
+  "name": "M-6 Gemelo Digital",
+  "description": "Plataforma de Gemelo Digital para control de leyes de mineral en minería a cielo abierto con cuantificación de incertidumbre mediante Deep Learning Bayesiano.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

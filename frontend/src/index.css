@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/* Enable dark mode via .dark class on html element */
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --bg-app: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f1f5f9;
+    --bg-subtle: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --border-main: #e2e8f0;
+    --border-subtle: #cbd5e1;
+  }
+
+  html.dark {
+    --bg-app: #030712;
+    --bg-surface: #0f172a;
+    --bg-card: #0b1120;
+    --bg-card-hover: #1e293b;
+    --bg-subtle: #0f172a;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border-main: #1e293b;
+    --border-subtle: #334155;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Chakra Petch', sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Global cursor pointer for all interactive elements */
+  button,
+  [role="button"],
+  a,
+  input[type="submit"],
+  input[type="button"],
+  input[type="reset"],
+  select,
+  label[for],
+  [onclick],
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  /* Ensure disabled buttons don't show pointer */
+  button:disabled,
+  [role="button"]:disabled,
+  a:not([href]) {
+    cursor: not-allowed;
+  }
+
+  /* Range inputs should use default cursor */
+  input[type="range"] {
+    cursor: default;
+  }
+}
+
+/* Custom scrollbars that adapt to light and dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 0.6);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.9);
+}
+
+/* Responsive safety utilities */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (max-width: 640px) {
+  .text-responsive-title {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+  }
+}
+
+/* Shimmer progress bar used in the PDF preview modal */
+@keyframes m6shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+

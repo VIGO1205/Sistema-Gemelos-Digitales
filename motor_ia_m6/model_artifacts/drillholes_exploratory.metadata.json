@@ -1,0 +1,49 @@
+{
+  "mode": "drillholes_exploratory",
+  "dataset": "GeoMet drillholes",
+  "model_name": "Random Forest",
+  "features": [
+    "x",
+    "y",
+    "z"
+  ],
+  "target": "Cu medido (% Cu)",
+  "validation": "sondajes completos no vistos",
+  "sample_count": 2480,
+  "coordinate_bounds": {
+    "x": {
+      "min": 548131.0464396445,
+      "max": 548989.7348001538,
+      "median": 548443.0631297113
+    },
+    "y": {
+      "min": 3623410.359757101,
+      "max": 3624429.6785090105,
+      "median": 3623981.2183116516
+    },
+    "z": {
+      "min": 1120.0231169609706,
+      "max": 1340.6619237886466,
+      "median": 1183.243876270778
+    }
+  },
+  "metrics": {
+    "rmse": 0.11266571153566253,
+    "mae": 0.06763780271908078,
+    "r2": 0.24314626871391798,
+    "mape": 67.7298312670161,
+    "bias": 0.03336981123953878,
+    "uncertainty": 0.11733835633530725,
+    "composite_score": 0.2261522776701562
+  },
+  "library_versions": {
+    "numpy": "2.2.6",
+    "scikit-learn": "1.7.2",
+    "xgboost": "3.4.1",
+    "pykrige": "1.7.3",
+    "torch": "2.14.0",
+    "joblib": "1.5.2"
+  },
+  "exported_at": "2026-10-08T22:57:42.043513+00:00",
+  "artifact": "drillholes_exploratory.joblib"
+}

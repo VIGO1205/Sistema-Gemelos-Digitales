@@ -1,0 +1,86 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: m6_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: m6_gemelo_digital
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: m6_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/m6_gemelo_digital
+      - DATABASE_URL_SYNC=postgresql://postgres:postgres@db:5432/m6_gemelo_digital
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+      - DEBUG=True
+      - DEMO_ACCOUNTS_ENABLED=true
+      # Inferencia en vivo -> contenedor motor-inference (no host.docker.internal)
+      - ML_INFERENCE_URL=http://motor-inference:8502
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: m6_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Vite proxy target inside Docker network (frontend container -> backend container)
+      - API_PROXY_TARGET=http://backend:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Ventanita de inferencia en vivo: carga el modelo ganador y predice bajo demanda.
+  # El artefacto (model_artifacts/) lo genera Streamlit al activar el Modelo Ganador (Fase 6),
+  # y se comparte via bind mount (misma carpeta del host) para que el contenedor lo lea.
+  motor-inference:
+    build:
+      context: ./motor_ia_m6
+      dockerfile: Dockerfile.serving
+    container_name: m6_inference
+    restart: unless-stopped
+    ports:
+      - "8502:8502"
+    environment:
+      # El servicio llama al backend para leer datos de planta y persistir predicciones
+      - MOTOR_API_BASE_URL=http://backend:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./motor_ia_m6:/app
+    command: uvicorn serving:app --host 0.0.0.0 --port 8502
+
+volumes:
+  postgres_data:
