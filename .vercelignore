@@ -1,0 +1,17 @@
+/*
+!backend
+!motor_ia_m6
+!server.py
+!requirements.txt
+!vercel.json
+!.python-version
+motor_ia_m6/*
+!motor_ia_m6/model_artifacts
+motor_ia_m6/model_artifacts/*
+!motor_ia_m6/model_artifacts/copper_creek_winner.joblib
+!motor_ia_m6/model_artifacts/copper_creek_winner.metadata.json
+backend/alembic
+backend/scripts
+backend/Dockerfile*
+backend/*.md
+backend/.env

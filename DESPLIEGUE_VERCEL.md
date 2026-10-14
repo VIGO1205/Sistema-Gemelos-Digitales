@@ -1,5 +1,19 @@
 # Despliegue gratuito para probar el gemelo digital
 
+## Alternativa cuando Render no inicia las compilaciones: API y React en Vercel
+
+Se pueden crear **dos proyectos de Vercel desde este mismo repositorio**. La base PostgreSQL permanece en Render; Vercel no aloja esa base directamente. Esta alternativa utiliza el mismo artefacto Random Forest y conserva el diseño del frontend. No requiere Web Service de Render.
+
+1. En Vercel crea el proyecto de **API** desde el repositorio. Deja **Root Directory vacío** y selecciona **FastAPI**. No configures Build Command ni Output Directory. El archivo `server.py` es la entrada, `requirements.txt` instala solo dependencias de ejecución y `.vercelignore` excluye los archivos de entrenamiento.
+2. En las variables de entorno del proyecto API configura `DATABASE_URL` con la **External Database URL** de Render PostgreSQL, cambiando `postgresql://` por `postgresql+asyncpg://` y añadiendo `?sslmode=require` si no está presente. Usa la URL externa, no la interna. Configura también `SECRET_KEY`, `INITIAL_ADMIN_EMAIL`, `INITIAL_ADMIN_PASSWORD`, `DEMO_ACCOUNTS_ENABLED=false`, `ENABLE_PUBLIC_REGISTRATION=false`, `DEBUG=false` y `CORS_ORIGINS` con la URL final del frontend. Nunca uses variables `VITE_` para secretos.
+3. Despliega la API y comprueba `/health` y `/api/copper-creek/model-info` en su dominio Vercel. La segunda ruta debe indicar `Random Forest`.
+4. Crea el proyecto de **frontend** desde el mismo repositorio, con **Root Directory `frontend`** y preset **Vite**. Configura `VITE_API_BASE_URL` con el dominio HTTPS de la API, sin barra final. Despliega y prueba el inicio de sesión y el visor 3D.
+5. Si todavía no conoces el dominio final del frontend, usa temporalmente `CORS_ORIGINS=http://localhost:3000` al desplegar la API y actualízala al dominio Vercel antes de probar el navegador.
+
+El proyecto FastAPI se empaqueta como una sola Vercel Function: el límite estándar de Python es 500 MB sin comprimir, con 2 GB de memoria en Hobby. Hay que confirmar en el primer despliegue que las dependencias y el modelo caben. La respuesta JSON de la escena ronda 2.7 MB y está por debajo del límite de 4.5 MB por respuesta. La conexión externa de Render PostgreSQL usa TLS y puede tener más latencia que la conexión interna.
+
+## Variante original: API en Render, React en Vercel
+
 La variante de Render ejecuta **FastAPI y el Random Forest publicado de Copper Creek en un solo Web Service**. No requiere crear un Private Service ni desplegar Streamlit. React se publica en Vercel y PostgreSQL se mantiene en Render. El Dockerfile local y el motor separado siguen disponibles para desarrollo.
 
 ## 1. Crear el Web Service de FastAPI en Render

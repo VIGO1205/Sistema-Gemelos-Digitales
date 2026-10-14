@@ -1,0 +1,17 @@
+# Runtime dependencies of the Vercel FastAPI function.
+fastapi==0.115.12
+sqlalchemy==2.0.40
+asyncpg==0.30.0
+pydantic==2.11.3
+pydantic-settings==2.8.1
+python-dotenv==1.1.0
+httpx==0.28.1
+python-multipart==0.0.20
+openpyxl==3.1.5
+bcrypt==5.0.0
+python-jose[cryptography]==3.4.0
+email-validator==2.2.0
+numpy==2.2.6
+scipy==1.16.2
+scikit-learn==1.7.2
+joblib==1.5.2

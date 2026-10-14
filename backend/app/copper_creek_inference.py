@@ -1,6 +1,7 @@
 """Inference for the published Copper Creek Random Forest inside the API process."""
 
 import json
+import os
 from functools import lru_cache
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -11,7 +12,10 @@ from fastapi import HTTPException
 from scipy.spatial import cKDTree
 
 
-ARTIFACT_DIR = Path(__file__).resolve().parents[1] / "model_artifacts"
+ARTIFACT_DIR = Path(os.environ.get(
+    "COPPER_CREEK_ARTIFACT_DIR",
+    Path(__file__).resolve().parents[1] / "model_artifacts",
+))
 MODEL_PATH = ARTIFACT_DIR / "copper_creek_winner.joblib"
 METADATA_PATH = ARTIFACT_DIR / "copper_creek_winner.metadata.json"
 
@@ -25,6 +29,10 @@ def model_metadata() -> dict:
         raise HTTPException(status_code=503, detail="Metadatos Copper Creek incompatibles")
     mismatches = []
     for package, trained in metadata.get("library_versions", {}).items():
+        # The published estimator is Random Forest. XGBoost was a training
+        # candidate, but is not needed to deserialize or run this artifact.
+        if package == "xgboost" and metadata["model_name"] == "Random Forest":
+            continue
         try:
             installed = version(package)
         except PackageNotFoundError:
