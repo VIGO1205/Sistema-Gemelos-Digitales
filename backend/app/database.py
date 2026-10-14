@@ -9,6 +9,9 @@ from app.config import get_settings
 settings = get_settings()
 
 database_url = make_url(settings.DATABASE_URL)
+if database_url.drivername in {"postgres", "postgresql"}:
+    # Render provides a standard PostgreSQL URL; this app uses asyncpg.
+    database_url = database_url.set(drivername="postgresql+asyncpg")
 connect_args = {}
 if "sslmode" in database_url.query:
     # asyncpg expects `ssl`, while Render's external URL uses `sslmode`.
