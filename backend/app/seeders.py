@@ -2,6 +2,7 @@ import random
 import math
 from datetime import datetime, date
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from app.models import (
     Project, Block, Drillhole, DrillholeSample,
@@ -18,9 +19,9 @@ async def seed_database(db: AsyncSession):
     from sqlalchemy import select, func
 
     # ─── Always seed users if table is empty (for auth) ───
+    settings = get_settings()
     user_count = await db.execute(select(func.count()).select_from(User))
     if user_count.scalar() == 0:
-        settings = get_settings()
         users_data = [
             {"email": "admin@m6gemelo.cl", "password": "AdminM6*2026", "full_name": "Administrador del Sistema", "role": "ADMIN"},
             {"email": "qp.senior@m6gemelo.cl", "password": "QPSenior*2026", "full_name": "Dra. Elena Vásquez (QP)", "role": "SENIOR_GEOLOGIST"},
@@ -31,13 +32,6 @@ async def seed_database(db: AsyncSession):
         ]
         if not settings.DEMO_ACCOUNTS_ENABLED:
             users_data = []
-        if settings.INITIAL_ADMIN_EMAIL and settings.INITIAL_ADMIN_PASSWORD:
-            users_data.append({
-                "email": settings.INITIAL_ADMIN_EMAIL,
-                "password": settings.INITIAL_ADMIN_PASSWORD,
-                "full_name": "Administrador del Sistema",
-                "role": "ADMIN",
-            })
         for u in users_data:
             db.add(User(
                 email=u["email"],
@@ -47,6 +41,24 @@ async def seed_database(db: AsyncSession):
                 is_active=True,
             ))
         await db.commit()
+
+    if settings.INITIAL_ADMIN_EMAIL and settings.INITIAL_ADMIN_PASSWORD:
+        existing_admin = await db.execute(
+            select(User).where(User.email == settings.INITIAL_ADMIN_EMAIL)
+        )
+        if existing_admin.scalar_one_or_none() is None:
+            db.add(User(
+                email=settings.INITIAL_ADMIN_EMAIL,
+                hashed_password=get_password_hash(settings.INITIAL_ADMIN_PASSWORD),
+                full_name="Administrador del Sistema",
+                role="ADMIN",
+                is_active=True,
+            ))
+            try:
+                await db.commit()
+            except IntegrityError:
+                # Another serverless instance may have created the same admin.
+                await db.rollback()
 
     # Check if projects already seeded
     result = await db.execute(select(func.count()).select_from(Project))
