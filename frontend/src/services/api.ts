@@ -9,7 +9,8 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  // Render Free can need extra time to wake the API after inactivity.
+  timeout: 60000,
 });
 
 // Request interceptor for JWT auth tokens

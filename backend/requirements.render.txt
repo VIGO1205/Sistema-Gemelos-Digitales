@@ -1,0 +1,6 @@
+-r requirements.txt
+numpy==2.2.6
+scipy==1.16.2
+scikit-learn==1.7.2
+xgboost==3.4.1
+joblib==1.5.2

@@ -12,6 +12,7 @@ from pydantic import BaseModel
 router = APIRouter(prefix="/api/copper-creek", tags=["Copper Creek"])
 SCENE_PATH = Path(__file__).resolve().parents[2] / "data" / "copper_creek_mammoth.json"
 ML_INFERENCE_URL = os.getenv("ML_INFERENCE_URL", "http://host.docker.internal:8502")
+LOCAL_MODEL = os.getenv("COPPER_CREEK_LOCAL_MODEL", "false").lower() == "true"
 
 
 class CopperCreekPointRequest(BaseModel):
@@ -47,11 +48,19 @@ async def _forward_model(method: str, path: str, payload: dict | None = None):
 
 @router.get("/model-info")
 async def copper_creek_model_info():
+    if LOCAL_MODEL:
+        from app.copper_creek_inference import model_metadata
+
+        return {"success": True, "model": model_metadata()}
     return await _forward_model("GET", "/api/models/copper-creek/info")
 
 
 @router.post("/predict")
 async def copper_creek_predict(payload: CopperCreekPointRequest):
+    if LOCAL_MODEL:
+        from app.copper_creek_inference import predict
+
+        return predict(payload.x, payload.y, payload.z)
     return await _forward_model(
         "POST", "/api/models/copper-creek/predict", payload.model_dump()
     )

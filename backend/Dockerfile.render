@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 COPPER_CREEK_LOCAL_MODEL=true
+
+COPY backend/requirements.txt backend/requirements.render.txt ./
+RUN pip install --no-cache-dir -r requirements.render.txt
+
+COPY backend/app ./app
+COPY backend/data ./data
+COPY motor_ia_m6/model_artifacts/copper_creek_winner.joblib motor_ia_m6/model_artifacts/copper_creek_winner.metadata.json ./model_artifacts/
+
+RUN python -c "from app.copper_creek_inference import model_metadata, _model_bundle; assert model_metadata()['model_name'] == 'Random Forest'; assert _model_bundle()['model'] is not None"
+
+EXPOSE 10000
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]

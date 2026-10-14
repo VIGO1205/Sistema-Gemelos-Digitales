@@ -1,34 +1,43 @@
-# Despliegue del frontend en Vercel
+# Despliegue gratuito para probar el gemelo digital
 
-El proyecto tiene tres servicios de ejecución: React/Vite, FastAPI y el motor de inferencia, además de PostgreSQL. Vercel publica el **frontend**. La API, el motor y la base de datos necesitan un alojamiento público aparte; sin ellos, la página de inicio de sesión y las vistas de datos no pueden funcionar.
+La variante de Render ejecuta **FastAPI y el Random Forest publicado de Copper Creek en un solo Web Service**. No requiere crear un Private Service ni desplegar Streamlit. React se publica en Vercel y PostgreSQL se mantiene en Render. El Dockerfile local y el motor separado siguen disponibles para desarrollo.
 
-Esta primera publicación utiliza el modelo ganador de Copper Creek ya guardado en `motor_ia_m6/model_artifacts/copper_creek_winner.joblib`. Streamlit no necesita estar desplegado para servir estas predicciones. El servicio de inferencia incorpora el artefacto en su imagen y comprueba que se puede cargar durante la construcción. Entrenar otro modelo en Streamlit no actualizará automáticamente esta imagen: para cambiar el modelo de producción habrá que publicar un nuevo artefacto y volver a desplegar el motor.
+## 1. Crear el Web Service de FastAPI en Render
 
-## 1. Publicar la API y el motor
+1. En Render, elige **New > Web Service** y conecta `VIGO1205/Sistema-Gemelos-Digitales`.
+2. Elige **Language: Docker**, **Instance type: Free** y la **misma región** del PostgreSQL que ya creaste.
+3. Deja **Root Directory vacío** (raíz del repositorio). Configura **Dockerfile Path: `backend/Dockerfile.render`**. El contexto de Docker debe ser la raíz del repositorio.
+4. En Environment agrega:
 
-Despliega `backend/`, `motor_ia_m6/` y PostgreSQL en un servidor que admita procesos persistentes o contenedores. El motor necesita los archivos de `motor_ia_m6/model_artifacts/`; el backend necesita `backend/data/copper_creek_mammoth.json`. En el backend configura `ML_INFERENCE_URL` con la dirección interna del motor.
+   | Variable | Valor |
+   | --- | --- |
+   | `DATABASE_URL` | URL **interna** de Render PostgreSQL, cambiando solamente `postgresql://` por `postgresql+asyncpg://` |
+   | `SECRET_KEY` | Cadena aleatoria, larga y privada para firmar sesiones |
+   | `INITIAL_ADMIN_EMAIL` | Tu correo para el primer administrador |
+   | `INITIAL_ADMIN_PASSWORD` | Contraseña privada y fuerte para ese administrador |
+   | `CORS_ORIGINS` | Por ahora `http://localhost:3000`; actualízala con el dominio Vercel exacto después |
+   | `DEMO_ACCOUNTS_ENABLED` | `false` |
+   | `ENABLE_PUBLIC_REGISTRATION` | `false` |
+   | `DEBUG` | `false` |
 
-Antes de exponer la API a Internet, configura en su entorno:
+   `COPPER_CREEK_LOCAL_MODEL=true` ya viene en la imagen. **No agregues `ML_INFERENCE_URL`** para esta variante. `DATABASE_URL_SYNC` solo se necesita si ejecutarás Alembic; el arranque normal crea las tablas mediante SQLAlchemy asíncrono. Guarda las credenciales únicamente en Render, nunca en GitHub ni en el chat.
 
-- `DATABASE_URL` y `DATABASE_URL_SYNC`: conexiones a PostgreSQL.
-- `SECRET_KEY`: valor nuevo, aleatorio y privado para los tokens.
-- `CORS_ORIGINS`: URL exacta del frontend de Vercel, con `https://` y sin barra final. Si hay dominio propio o previsualizaciones, agrega cada origen permitido separado por comas.
-- `INITIAL_ADMIN_EMAIL` e `INITIAL_ADMIN_PASSWORD`: credenciales privadas para crear el primer administrador en una base de datos vacía. Cambiar estas variables posteriormente **no cambia** una cuenta ya creada.
-- `DEMO_ACCOUNTS_ENABLED=false` y `ENABLE_PUBLIC_REGISTRATION=false`.
-- `DEBUG=false`.
+5. Crea el Web Service. Cuando Render termine, comprueba `https://TU-SERVICIO.onrender.com/health` y `https://TU-SERVICIO.onrender.com/api/copper-creek/model-info`. El primero debe responder `status: ok` y el segundo debe mostrar `model_name: Random Forest`.
 
-No reutilices las contraseñas de demostración. El archivo `backend/.env` local está excluido de Git.
+La imagen verifica durante la construcción que el modelo guardado se puede cargar con las versiones de librerías de sus metadatos. Si falla ese paso, revisa el registro de construcción antes de configurar Vercel. El visor 3D y la consulta de ley usan `/api/copper-creek/predict` en este mismo servicio. Entrenar otro modelo en Streamlit no modifica esta imagen: habría que publicar el nuevo artefacto y desplegar otra versión.
 
-El `docker-compose.prod.yml` exige contraseña de PostgreSQL, clave de sesión y orígenes CORS en el entorno. Es un punto de partida para alojar los servicios; revisa red, TLS, respaldo de la base de datos y acceso administrativo en tu proveedor antes de abrirlos al público.
+## 2. Publicar React en Vercel
 
-## 2. Importar en Vercel
+1. Importa el mismo repositorio. Selecciona **Root Directory: `frontend`** y **Framework Preset: Vite**.
+2. Usa `npm run build` y directorio de salida `dist`. Usa Node 20 o posterior.
+3. En Environment Variables, añade `VITE_API_BASE_URL=https://TU-SERVICIO.onrender.com` sin barra final.
+4. Despliega. Copia la URL final de Vercel y cambia `CORS_ORIGINS` en Render a esa URL exacta, por ejemplo `https://mi-gemelo.vercel.app`. Guarda y espera el nuevo despliegue de Render.
+5. Prueba inicio de sesión, Dashboard Ejecutivo, Gemelo Digital 3D y una consulta de ley sobre un cubo.
 
-1. En Vercel, importa el repositorio de GitHub.
-2. Selecciona **Root Directory: `frontend`** y **Framework Preset: Vite**.
-3. Usa `npm run build` como comando de compilación y `dist` como directorio de salida. La versión de Node debe ser compatible con las dependencias del proyecto (Node 20 o posterior).
-4. En **Environment Variables**, agrega `VITE_API_BASE_URL=https://tu-api.example.com` (URL pública real de FastAPI, sin barra final). Configúrala para Production y Preview según corresponda.
-5. Despliega. Comprueba el inicio de sesión, `GET /health` de la API, el visor 3D y la consulta de ley.
+`VITE_API_BASE_URL` es pública en el navegador; no pongas secretos en ella. Si cambia la URL de FastAPI, Vercel debe recompilar el frontend.
 
-`VITE_API_BASE_URL` es una dirección visible en el navegador, nunca una credencial. Vercel la incorpora al bundle al compilar: si cambia, vuelve a desplegar. `frontend/vercel.json` envía las rutas de la aplicación React a `index.html`; las llamadas a `/api` van al origen indicado en `VITE_API_BASE_URL`.
+## Alcance del plan gratuito
 
-Para desarrollo local, `docker-compose.yml` conserva las cuentas de demostración y el proxy de Vite. El despliegue de producción no las activa.
+El plan Free de Render puede suspender el Web Service tras 15 minutos sin tráfico; la primera visita siguiente tarda en arrancar. Tiene 512 MB de RAM, por lo que el modelo se carga bajo demanda y se conserva en memoria una vez cargado. **La capacidad real debe comprobarse con el primer despliegue**. Render indica que su PostgreSQL Free expira a los 30 días y no ofrece copias de seguridad; úsalo para pruebas académicas, no como almacenamiento permanente.
+
+Las rutas heredadas del Motor IA y GeoMet que dependan del servicio separado no se trasladan automáticamente a esta variante. El alcance de esta imagen es la reconstrucción y el modelo ganador de **Copper Creek**. El `docker-compose.yml` local sigue utilizando el motor separado.
