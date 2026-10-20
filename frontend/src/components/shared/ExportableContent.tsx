@@ -1,7 +1,7 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { Download } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import { downloadSvgPng, downloadTableXlsx } from '../../services/visualExport';
+import { downloadFigureJpg, downloadTableXlsx } from '../../services/visualExport';
 
 interface Props {
   title: string;
@@ -16,30 +16,30 @@ function Interpretation({ text }: { text: string }) {
 }
 
 function ExportButton({ label, busy, onClick }: { label: string; busy: boolean; onClick: () => void }) {
-  return <button type="button" title={label} aria-label={label} onClick={onClick} disabled={busy}
+  return <button type="button" title={label} aria-label={label} data-export-control="true" onClick={onClick} disabled={busy}
     className="absolute right-2 top-2 z-20 inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white/95 px-2 py-1.5 text-[11px] font-semibold text-slate-800 shadow-sm opacity-0 transition-opacity hover:bg-amber-50 focus:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-900/95 dark:text-slate-100 dark:hover:bg-slate-800">
     <Download className="h-3.5 w-3.5" />{busy ? 'Preparando…' : label}
   </button>;
 }
 
 export function ExportableFigure({ title, filename, interpretation, children, className = '' }: Props) {
-  const visualRef = useRef<HTMLDivElement>(null);
+  const figureRef = useRef<HTMLElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const { isDark } = useTheme();
   const exportFigure = async () => {
-    const svg = visualRef.current?.querySelector('svg');
-    if (!svg) { setError('La figura aún no está disponible.'); return; }
+    const figure = figureRef.current;
+    if (!figure || !figure.querySelector('svg')) { setError('La figura aún no está disponible.'); return; }
     setBusy(true);
     setError('');
-    try { await downloadSvgPng(svg, `${filename}.png`, isDark, title); }
+    try { await downloadFigureJpg(figure.parentElement ?? figure, `${filename}.jpg`, isDark); }
     catch (cause) { setError(cause instanceof Error ? cause.message : 'No se pudo exportar la figura.'); }
     finally { setBusy(false); }
   };
-  return <figure className={`group relative ${className}`} aria-label={title}>
-    <div ref={visualRef} className="relative">
+  return <figure ref={figureRef} className={`group relative ${className}`} aria-label={title}>
+    <div className="relative">
       {children}
-      <ExportButton label="Descargar PNG" busy={busy} onClick={() => void exportFigure()} />
+      <ExportButton label="Descargar JPG" busy={busy} onClick={() => void exportFigure()} />
     </div>
     <figcaption><Interpretation text={interpretation} /></figcaption>
     {error && <p role="alert" className="mt-1 text-xs text-rose-600">{error}</p>}
