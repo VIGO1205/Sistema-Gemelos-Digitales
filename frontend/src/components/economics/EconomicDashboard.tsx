@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, DollarSign, FlaskConical, Layers, RotateCcw, Se
 import { useTheme } from '../../context/ThemeContext';
 import { useCopperCreekStudy } from '../../hooks/useCopperCreekStudy';
 import { MiningLoader } from '../shared/MiningLoader';
+import { ExportableFigure, ExportableTable } from '../shared/ExportableContent';
 
 const POUNDS_PER_METRIC_TONNE = 2204.62262185;
 const defaults = { price: 4.2, recovery: 85, cost: 20 };
@@ -72,11 +73,13 @@ export function EconomicDashboard() {
     <div className={card}>
       <h3 className="font-display text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">Ley media y umbral teórico por banco</h3>
       <p className="mb-4 mt-1 text-[10px] text-slate-500 dark:text-slate-400">Comparación visual del promedio simple de ley estimada con el umbral derivado de los supuestos editables; no es una ley de corte operativa.</p>
+      <ExportableFigure title="Ley media y umbral teórico por banco" filename="copper-creek-ley-umbral" interpretation={`El umbral teórico calculado con los parámetros actuales es ${breakEvenGrade?.toFixed(3) ?? 'no definido'} %Cu. La curva resume promedios de cubos con soporte; no define una ley de corte operativa.`}>
       <div className="h-64"><ResponsiveContainer width="100%" height="100%"><LineChart data={byBench}>
         <CartesianGrid stroke={isDark ? '#334155' : '#e2e8f0'} strokeDasharray="3 3" /><XAxis dataKey="bench" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} unit="%" /><Tooltip contentStyle={tooltipStyle} /><Legend />
         <Line type="monotone" dataKey="meanGrade" name="Ley media estimada %Cu" stroke="#38bdf8" strokeWidth={2.5} dot={{ r: 3 }} />
         {breakEvenGrade !== null && <ReferenceLine y={breakEvenGrade} stroke="#f59e0b" strokeDasharray="5 4" label="Umbral teórico" />}
       </LineChart></ResponsiveContainer></div>
+      </ExportableFigure>
     </div>
 
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -103,15 +106,17 @@ export function EconomicDashboard() {
     </div>
 
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <div className={card}><h3 className="font-display text-sm font-bold">Aporte ilustrativo medio por banco</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">USD por tonelada de referencia; cada cubo pesa igual en el promedio.</p><div className="mt-4 h-72"><ResponsiveContainer width="100%" height="100%"><BarChart data={byBench}><CartesianGrid stroke={isDark ? '#334155' : '#e2e8f0'} strokeDasharray="3 3" /><XAxis dataKey="bench" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} unit="$" /><Tooltip contentStyle={tooltipStyle} /><Bar dataKey="contribution" name="USD/t de referencia" fill="#0ea5e9" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div></div>
-      <div className={card}><h3 className="font-display text-sm font-bold">Sensibilidad al precio supuesto</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Cubos cuyo aporte ilustrativo es ≥ 0 al variar solo el precio Cu.</p><div className="mt-4 h-72"><ResponsiveContainer width="100%" height="100%"><BarChart data={sensitivity}><CartesianGrid stroke={isDark ? '#334155' : '#e2e8f0'} strokeDasharray="3 3" /><XAxis dataKey="price" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} /><Tooltip contentStyle={tooltipStyle} /><Legend /><Bar dataKey="above" name="Cubos sobre umbral teórico" fill="#10b981" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div></div>
+      <div className={card}><h3 className="font-display text-sm font-bold">Aporte ilustrativo medio por banco</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">USD por tonelada de referencia; cada cubo pesa igual en el promedio.</p><ExportableFigure title="Aporte ilustrativo por banco" filename="copper-creek-aporte-por-banco" interpretation={`El promedio del filtro es ${summary.meanContribution.toFixed(2)} USD/t de referencia bajo los supuestos editables. No representa rentabilidad medida.`}><div className="mt-4 h-72"><ResponsiveContainer width="100%" height="100%"><BarChart data={byBench}><CartesianGrid stroke={isDark ? '#334155' : '#e2e8f0'} strokeDasharray="3 3" /><XAxis dataKey="bench" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} unit="$" /><Tooltip contentStyle={tooltipStyle} /><Bar dataKey="contribution" name="USD/t de referencia" fill="#0ea5e9" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div></ExportableFigure></div>
+      <div className={card}><h3 className="font-display text-sm font-bold">Sensibilidad al precio supuesto</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Cubos cuyo aporte ilustrativo es ≥ 0 al variar solo el precio Cu.</p><ExportableFigure title="Sensibilidad al precio supuesto" filename="copper-creek-sensibilidad-precio" interpretation={`Se varía únicamente el precio supuesto alrededor de ${price.toFixed(2)} USD/lb. Los conteos cambian con el escenario y no asignan destinos reales.`}><div className="mt-4 h-72"><ResponsiveContainer width="100%" height="100%"><BarChart data={sensitivity}><CartesianGrid stroke={isDark ? '#334155' : '#e2e8f0'} strokeDasharray="3 3" /><XAxis dataKey="price" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} /><Tooltip contentStyle={tooltipStyle} /><Legend /><Bar dataKey="above" name="Cubos sobre umbral teórico" fill="#10b981" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div></ExportableFigure></div>
     </div>
 
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800"><h3 className="font-display text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">Detalle exploratorio por banco</h3></div>
+      <ExportableTable title="Detalle exploratorio por banco" filename="copper-creek-detalle-economico-bancos" interpretation={`Se exportan ${byBench.length} bancos del filtro actual con los parámetros económicos visibles. Son promedios por cubo de igual peso.`} className="px-4 pb-3">
       <div className="overflow-x-auto"><table className="w-full text-xs"><thead className="bg-slate-50 font-mono text-slate-500 dark:bg-slate-950/50 dark:text-slate-400"><tr><th className="px-4 py-2 text-left">Banco</th><th className="px-4 py-2 text-right">Cubos con soporte</th><th className="px-4 py-2 text-right">Ley media %Cu</th><th className="px-4 py-2 text-right">Sobre umbral teórico</th><th className="px-4 py-2 text-right">Aporte medio USD/t ref.</th></tr></thead>
         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">{byBench.map(row => <tr key={row.bench} className="hover:bg-slate-50 dark:hover:bg-slate-800/40"><td className="px-4 py-2 font-mono font-bold">{row.bench}m</td><td className="px-4 py-2 text-right font-mono">{row.count}</td><td className="px-4 py-2 text-right font-mono">{row.meanGrade.toFixed(3)}</td><td className="px-4 py-2 text-right font-mono">{row.above}</td><td className="px-4 py-2 text-right font-mono">{row.contribution.toFixed(2)}</td></tr>)}</tbody>
       </table></div>
+      </ExportableTable>
     </div>
 
     <div className={`${card} text-xs`}><h3 className="font-display text-sm font-bold">Comparación de clasificación del ejercicio</h3><p className="mt-2">Con estos supuestos, <strong>{summary.above.toLocaleString('es-PE')}</strong> cubos quedan sobre el umbral teórico según {model.model_name}. En <strong>{summary.differentFromIdw3.toLocaleString('es-PE')}</strong> cubos, IDW3 y {model.model_name} quedan en lados distintos del umbral. Esto indica sensibilidad al estimador, no un cambio medido de destino.</p></div>

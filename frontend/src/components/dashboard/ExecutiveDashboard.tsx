@@ -8,6 +8,7 @@ import api from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
 import type { CopperCreekScene } from '../viewer3d/CopperCreekViewer';
 import { MiningLoader } from '../shared/MiningLoader';
+import { ExportableFigure } from '../shared/ExportableContent';
 
 interface Props {
   onOpenViewer: () => void;
@@ -165,6 +166,7 @@ export function ExecutiveDashboard({ onOpenViewer }: Props) {
         <div className={card}>
           <h3 className="font-display text-sm font-bold text-slate-900 dark:text-slate-100">Ley Cu media por banco</h3>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Modelo seleccionado frente a la estimación IDW3 de referencia; sin interpretación de reservas.</p>
+          <ExportableFigure title="Ley Cu media por banco" filename="copper-creek-ley-por-banco" interpretation={`El gráfico compara ${benchSeries.length} bancos con cubos estimados. Las dos curvas son estimaciones espaciales, no leyes medidas de cada cubo.`}>
           <div className="mt-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={benchSeries}>
@@ -178,10 +180,12 @@ export function ExecutiveDashboard({ onOpenViewer }: Props) {
               </LineChart>
             </ResponsiveContainer>
           </div>
+          </ExportableFigure>
         </div>
         <div className={card}>
           <h3 className="font-display text-sm font-bold text-slate-900 dark:text-slate-100">Cubos por tramo de ley estimada</h3>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Conteos del banco seleccionado; los rangos son solo exploratorios.</p>
+          <ExportableFigure title="Cubos por tramo de ley" filename="copper-creek-distribucion-ley" interpretation={`Se muestran ${blocks.length.toLocaleString('es-PE')} cubos con soporte en el filtro actual. Los tramos clasifican la ley estimada del modelo publicado.`}>
           <div className="mt-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={distribution}>
@@ -193,16 +197,19 @@ export function ExecutiveDashboard({ onOpenViewer }: Props) {
               </BarChart>
             </ResponsiveContainer>
           </div>
+          </ExportableFigure>
         </div>
       </div>
 
       <div className={card}>
         <h3 className="font-display text-sm font-bold text-slate-900 dark:text-slate-100">Cobertura espacial por banco</h3>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Conteo de cubos con soporte que el modelo pudo estimar en cada nivel de la reconstrucción.</p>
+        <ExportableFigure title="Cobertura espacial por banco" filename="copper-creek-cobertura-bancos" interpretation={`El conteo corresponde a ${blocks.length.toLocaleString('es-PE')} cubos estimados con soporte; no incluye los ${metadata.skipped_unsupported_blocks.toLocaleString('es-PE')} candidatos omitidos.`}>
         <div className="mt-4 h-64"><ResponsiveContainer width="100%" height="100%"><BarChart data={benchSeries}>
           <CartesianGrid stroke={chartGrid} strokeDasharray="3 3" /><XAxis dataKey="bench" stroke={chartText} tick={{ fontSize: 10 }} /><YAxis stroke={chartText} tick={{ fontSize: 10 }} />
           <Tooltip contentStyle={tooltipStyle} /><Bar dataKey="count" name="Cubos con soporte" fill="#f59e0b" radius={[4, 4, 0, 0]} />
         </BarChart></ResponsiveContainer></div>
+        </ExportableFigure>
       </div>
 
       <div className={card}>

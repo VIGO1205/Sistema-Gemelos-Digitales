@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { BlockModelItem, Drillhole, MiningProject } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import { economicsApi } from '../../services/api';
+import { downloadCanvasPng } from '../../services/visualExport';
 import { 
   Layers, 
   Filter, 
@@ -199,6 +200,9 @@ export const BlockModel3DViewer: React.FC<BlockModel3DViewerProps> = ({
   const { isDark } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const renderContextRef = useRef<{ renderer: THREE.WebGLRenderer; scene: THREE.Scene; camera: THREE.PerspectiveCamera } | null>(null);
+  const [capturing, setCapturing] = useState(false);
+  const [captureError, setCaptureError] = useState('');
 
   const activeSelectedId = selectedBlockId || selectedBlock?.id || null;
   const projectCutOff = project?.cutOffGrade ?? 0.35;
@@ -822,8 +826,10 @@ export const BlockModel3DViewer: React.FC<BlockModel3DViewerProps> = ({
     const renderer = new THREE.WebGLRenderer({
       canvas: canvasRef.current,
       antialias: true,
+      preserveDrawingBuffer: true,
       powerPreference: 'high-performance'
     });
+    renderContextRef.current = { renderer, scene, camera };
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
@@ -1432,6 +1438,7 @@ export const BlockModel3DViewer: React.FC<BlockModel3DViewerProps> = ({
       window.removeEventListener('resize', handleResize);
       resizeObserver.disconnect();
       renderer.dispose();
+      renderContextRef.current = null;
       blockMeshesRef.current.clear();
       sceneRef.current = null;
       trajectoryGroupRef.current = null;
@@ -1442,11 +1449,54 @@ export const BlockModel3DViewer: React.FC<BlockModel3DViewerProps> = ({
     };
   }, [visibleBlocks, drillholes, colorMode, showDrillholes, showPitWireframe, activeSelectedId, isDark, pitMode, importedPitLevels, copperCreek, referenceCenter, referencePitLevels]);
 
+  const capture3D = async () => {
+    const context = renderContextRef.current;
+    const container = containerRef.current;
+    if (!context || !container) return;
+    setCapturing(true);
+    setCaptureError('');
+    const { renderer, scene, camera } = context;
+    const originalSize = renderer.getSize(new THREE.Vector2());
+    const originalRatio = renderer.getPixelRatio();
+    const originalAspect = camera.aspect;
+    try {
+      const gl = renderer.getContext();
+      const maxSize = Math.min(renderer.capabilities.maxTextureSize, gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) as number);
+      const aspect = Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight);
+      const width = Math.max(1, Math.min(4200, maxSize, Math.floor(maxSize * aspect)));
+      const height = Math.max(1, Math.round(width / aspect));
+      const output = document.createElement('canvas');
+      output.width = width;
+      output.height = height;
+      try {
+        renderer.setPixelRatio(1);
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.render(scene, camera);
+        const pixels = output.getContext('2d');
+        if (!pixels) throw new Error('No se pudo crear la captura 3D.');
+        pixels.drawImage(renderer.domElement, 0, 0, width, height);
+      } finally {
+        renderer.setPixelRatio(originalRatio);
+        renderer.setSize(originalSize.x, originalSize.y, false);
+        camera.aspect = originalAspect;
+        camera.updateProjectionMatrix();
+        renderer.render(scene, camera);
+      }
+      await downloadCanvasPng(output, `gemelo-digital-3d-${colorMode.toLowerCase()}.png`, 600);
+    } catch (cause) {
+      setCaptureError(cause instanceof Error ? cause.message : 'No se pudo capturar el visor 3D.');
+    } finally {
+      setCapturing(false);
+    }
+  };
+
   return (
     <div
       ref={viewerRef}
       className={`
-        relative w-full min-h-0 flex flex-col bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xl
+        group relative w-full min-h-0 flex flex-col bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xl
         ${isFullscreen ? 'fixed inset-0 z-[100] rounded-none border-0 h-screen' : hasAttachedFooter ? 'h-full rounded-t-2xl border-b-0' : 'h-full rounded-2xl'}
       `}
     >
@@ -1589,6 +1639,11 @@ export const BlockModel3DViewer: React.FC<BlockModel3DViewerProps> = ({
             </button>
           )}
 
+          <button type="button" onClick={() => void capture3D()} disabled={capturing}
+            title="Descargar captura PNG a 600 DPI"
+            className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700 shadow-sm opacity-100 transition-opacity hover:bg-amber-50 focus:opacity-100 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+            <Download className="h-3.5 w-3.5" /><span>{capturing ? 'Capturando…' : 'PNG 600 DPI'}</span>
+          </button>
           <button
             onClick={toggleFullscreen}
             className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs border transition-colors bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
@@ -2255,6 +2310,13 @@ export const BlockModel3DViewer: React.FC<BlockModel3DViewerProps> = ({
           </div>
         )}
 
+      </div>
+      <div className="shrink-0 border-t border-slate-200 bg-white/95 px-4 py-2 text-[11px] leading-relaxed text-slate-600 dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-400">
+        <strong className="text-slate-700 dark:text-slate-300">Interpretación determinística: </strong>
+        {copperCreek
+          ? `La vista muestra ${visibleBlocks.length.toLocaleString('es-PE')} cubos con soporte${selectedBench === 'ALL' ? ' de todos los bancos' : ` del banco ${selectedBench} m`}. ${colorMode === 'CU_BASE' ? 'Los colores representan IDW3 de referencia.' : colorMode === 'UNCERTAINTY' ? 'Los colores representan la dispersión local entre sondajes.' : `Los colores representan la ley Cu estimada por ${copperCreekModelName}.`} El tajo es una reconstrucción académica aproximada.`
+          : `La vista muestra ${visibleBlocks.length.toLocaleString('es-PE')} bloques bajo el filtro actual. Los colores siguen el modo seleccionado; la geometría y la clasificación requieren validación antes de cualquier uso operativo.`}
+        {captureError && <span role="alert" className="ml-2 text-rose-600">{captureError}</span>}
       </div>
     </div>
   );

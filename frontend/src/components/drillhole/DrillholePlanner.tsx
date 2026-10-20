@@ -1,5 +1,6 @@
 ﻿import { useMemo, useState } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis, Cell } from 'recharts';
+import { ExportableFigure, ExportableTable } from '../shared/ExportableContent';
 import { Crosshair, MapPin, Target, TrendingUp, Drill, Download, Info } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useCopperCreekStudy } from '../../hooks/useCopperCreekStudy';
@@ -129,6 +130,7 @@ export function DrillholePlanner() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       <div className={panel + ' lg:col-span-2 p-4 sm:p-5'}>
         <h3 className="text-xs font-bold uppercase font-display tracking-wider mb-4 flex items-center gap-1.5"><Target className="w-3.5 h-3.5 text-amber-500" /> Mapa de zonas para revisión (UTM)</h3>
+        <ExportableFigure title="Mapa de zonas para revisión" filename="copper-creek-zonas-revision" interpretation={`Se visualizan ${heatMapData.length} cubos del filtro. El color codifica un índice de prioridad académica, no ubicaciones aprobadas para perforación.`}>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
@@ -145,6 +147,7 @@ export function DrillholePlanner() {
             </ScatterChart>
           </ResponsiveContainer>
         </div>
+        </ExportableFigure>
         <div className="flex flex-wrap justify-center gap-4 mt-2 text-[10px] font-mono text-slate-500">
           <span>🟢 Menor (&lt;50)</span><span>🟠 Media (50–70)</span><span>🔴 Mayor (&gt;70)</span>
         </div>
@@ -181,6 +184,7 @@ export function DrillholePlanner() {
         <h3 className="text-xs font-bold uppercase font-display tracking-wider flex items-center gap-1.5"><Target className="w-3.5 h-3.5 text-amber-500" /> Ranking de zonas a revisar ({planning.recommendations.length})</h3>
         <p className="mt-1 text-[10px] text-slate-500">Máximo 10 cubos separados al menos 80 m en 3D. El ranking no genera un sondaje, ensaye ni clasificación de recursos.</p>
       </div>
+      <ExportableTable title="Ranking de zonas a revisar" filename="copper-creek-ranking-zonas" interpretation={`El ranking presenta ${planning.recommendations.length} cubos candidatos separados espacialmente. No constituye un plan de sondajes ejecutable.`} className="px-3 pb-3">
       <div className="overflow-x-auto"><table className="w-full text-xs">
         <thead className="bg-slate-50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 font-mono"><tr>
           <th className="px-4 py-2 text-left">#</th><th className="px-4 py-2 text-left">Cubo</th><th className="px-4 py-2 text-right">Banco</th>
@@ -200,6 +204,7 @@ export function DrillholePlanner() {
           </tr>)}
         </tbody>
       </table></div>
+      </ExportableTable>
       {!planning.recommendations.length && <div className="p-4 text-xs text-slate-500 flex items-center gap-2"><Info className="w-4 h-4" /> Sin zonas candidatas en este banco.</div>}
     </div>
   </div>;

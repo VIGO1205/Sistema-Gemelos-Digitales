@@ -6,6 +6,7 @@ import { useCopperCreekStudy, type CopperCreekModelMetadata } from '../../hooks/
 import api from '../../services/api';
 import { BlockQualityGallery3D, type CubeQuality, type QualityBlock } from './BlockQuality3D';
 import { MiningLoader } from '../shared/MiningLoader';
+import { ExportableFigure } from '../shared/ExportableContent';
 
 type Tab = 'MODELS_OVERVIEW' | 'INTERACTIVE_INFERENCE' | 'SCENARIO_COMPARISON';
 type Point = { x: number; y: number; z: number };
@@ -185,11 +186,13 @@ export const BayesianInferenceEngine: React.FC<{ onOpenViewer: () => void }> = (
               <p className="text-xs text-slate-500 dark:text-slate-400">{scene.blocks.length.toLocaleString('es-PE')} cubos con soporte · distribución espacial, no posterior bayesiano</p></div>
             {prediction && <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/40 text-xs font-mono font-bold">{prediction.predicted_cu_pct.toFixed(4)} %Cu</span>}
           </div>
+          <ExportableFigure title="Distribución de ley estimada" filename="copper-creek-distribucion-motor" interpretation={`El histograma agrupa ${scene.blocks.length.toLocaleString('es-PE')} cubos estimados con soporte. No representa una distribución posterior bayesiana.`}>
           <div className="h-64 w-full"><ResponsiveContainer width="100%" height="100%"><BarChart data={histogram} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} /><XAxis dataKey="bin" stroke={chartText} tick={{ fontSize: 10 }} /><YAxis stroke={chartText} tick={{ fontSize: 10 }} />
             <Tooltip contentStyle={{ backgroundColor: isDark ? '#0f172a' : '#ffffff', borderColor: chartGrid, color: isDark ? '#f8fafc' : '#0f172a' }} />
             <Bar dataKey="count" name="Cubos" fill="#f59e0b" radius={[4, 4, 0, 0]} />
           </BarChart></ResponsiveContainer></div>
+          </ExportableFigure>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
             <div className={inset}><span className="text-[10px] text-slate-500 block">Modelo publicado</span><span className="font-mono font-bold text-amber-600 dark:text-amber-400">{prediction?.model_name ?? model.model_name}</span></div>
             <div className={inset}><span className="text-[10px] text-slate-500 block">Sondajes de soporte</span><span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">{prediction?.support_holes ?? selectedCube?.support_holes ?? '—'}</span></div>

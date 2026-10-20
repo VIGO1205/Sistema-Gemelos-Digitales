@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { BlockModelItem } from '../../types';
+import { Download } from 'lucide-react';
+import { downloadCanvasPng } from '../../services/visualExport';
 
 export type CubeQuality = 'BUENO' | 'REGULAR' | 'NO_SIRVE';
 
@@ -58,6 +60,9 @@ const QUALITY_META: Record<CubeQuality, { label: string; tag: string; rule: stri
 const QualityCubeCanvas: React.FC<QualityCubeCanvasProps> = ({ quality, active, isDark, large = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sceneRef = useRef<{ renderer: THREE.WebGLRenderer; scene: THREE.Scene; camera: THREE.PerspectiveCamera } | null>(null);
+  const [exporting, setExporting] = React.useState(false);
+  const [exportError, setExportError] = React.useState('');
 
   useEffect(() => {
     const container = containerRef.current;
@@ -69,7 +74,8 @@ const QualityCubeCanvas: React.FC<QualityCubeCanvasProps> = ({ quality, active, 
     camera.position.set(2.6, 2.2, 3.1);
     camera.lookAt(0, 0, 0);
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+    sceneRef.current = { renderer, scene, camera };
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, Math.max(container.clientHeight, 1));
 
@@ -139,12 +145,61 @@ const QualityCubeCanvas: React.FC<QualityCubeCanvasProps> = ({ quality, active, 
       grid.geometry.dispose();
       (grid.material as THREE.Material).dispose();
       renderer.dispose();
+      sceneRef.current = null;
     };
   }, [quality, active, isDark]);
 
+  const exportCube = async () => {
+    const context = sceneRef.current;
+    const container = containerRef.current;
+    if (!context || !container) return;
+    setExporting(true);
+    setExportError('');
+    const { renderer, scene, camera } = context;
+    const size = renderer.getSize(new THREE.Vector2());
+    const ratio = renderer.getPixelRatio();
+    const aspect = camera.aspect;
+    try {
+      const gl = renderer.getContext();
+      const maxSize = Math.min(renderer.capabilities.maxTextureSize, gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) as number);
+      const width = Math.min(3600, maxSize);
+      const height = Math.min(Math.round(width / Math.max(container.clientWidth / container.clientHeight, 0.1)), maxSize);
+      const image = document.createElement('canvas');
+      image.width = width;
+      image.height = height;
+      try {
+        renderer.setPixelRatio(1);
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.render(scene, camera);
+        const pixels = image.getContext('2d');
+        if (!pixels) throw new Error('No se pudo crear la imagen.');
+        pixels.fillStyle = isDark ? '#0f172a' : '#f8fafc';
+        pixels.fillRect(0, 0, width, height);
+        pixels.drawImage(renderer.domElement, 0, 0, width, height);
+      } finally {
+        renderer.setPixelRatio(ratio);
+        renderer.setSize(size.x, size.y, false);
+        camera.aspect = aspect;
+        camera.updateProjectionMatrix();
+      }
+      await downloadCanvasPng(image, `copper-creek-cubo-${quality.toLowerCase()}.png`, 600);
+    } catch (cause) {
+      setExportError(cause instanceof Error ? cause.message : 'No se pudo exportar el cubo.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
-    <div ref={containerRef} className={`relative ${large ? 'h-56 sm:h-64' : 'h-24'}`}>
+    <div ref={containerRef} className={`group relative ${large ? 'h-56 sm:h-64' : 'h-24'}`}>
       <canvas ref={canvasRef} className="w-full h-full" />
+      {large && <button type="button" title="Descargar PNG a 600 DPI" onClick={() => void exportCube()} disabled={exporting}
+        className="absolute right-2 top-2 flex items-center gap-1 rounded-lg border border-slate-300 bg-white/95 px-2 py-1 text-[10px] font-semibold text-slate-800 opacity-0 shadow-sm transition-opacity hover:bg-amber-50 focus:opacity-100 group-hover:opacity-100 dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-100">
+        <Download className="h-3 w-3" />{exporting ? 'Capturando…' : 'PNG 600 DPI'}
+      </button>}
+      {exportError && <span role="alert" className="absolute bottom-1 left-1 text-[10px] text-rose-600">{exportError}</span>}
     </div>
   );
 };
@@ -209,6 +264,7 @@ export const BlockQualityGallery3D: React.FC<BlockQualityGalleryProps> = ({
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
           <div className={`rounded-2xl border bg-slate-50 dark:bg-slate-950/40 p-3 ${QUALITY_RING[activeItem.quality]}`}>
             <QualityCubeCanvas quality={activeItem.quality} active isDark={isDark} large />
+            <p className="mt-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400"><strong>Interpretación determinística: </strong>El cubo {activeItem.block.id} del banco {activeItem.block.bench} m tiene una ley estimada de {activeItem.block.cu_bayesian.toFixed(3)} %Cu. Su etiqueta de calidad es ilustrativa y requiere validación local.</p>
             <div className="flex items-center justify-between mt-1">
               <span className={`text-xs font-bold ${QUALITY_TEXT[activeItem.quality]}`}>
                 Nivel de calidad: {QUALITY_META[activeItem.quality].label}

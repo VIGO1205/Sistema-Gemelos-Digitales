@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { BlockModelItem, Drillhole } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
+import { ExportableFigure } from '../shared/ExportableContent';
 
 interface FootprintMapProps {
   blocks: BlockModelItem[];
@@ -76,6 +77,7 @@ export const FootprintMap: React.FC<FootprintMapProps> = ({ blocks, drillholes, 
         </div>
       </div>
 
+      <ExportableFigure title="Plano de huella espacial" filename="copper-creek-huella-espacial" interpretation={`El plano proyecta ${filtered.length} cubos del nivel seleccionado y ${drillholes.length} collares visibles en ${crs}. El color representa la ley Cu estimada por ${modelName}.`}>
       <div className="rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" style={{ fontFamily: 'ui-monospace, monospace' }}>
           {/* Light grid */}
@@ -116,6 +118,7 @@ export const FootprintMap: React.FC<FootprintMapProps> = ({ blocks, drillholes, 
           ))}
         </svg>
       </div>
+      </ExportableFigure>
 
       {/* Grade legend + drillhole legend */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">

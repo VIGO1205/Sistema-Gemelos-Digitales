@@ -3,6 +3,7 @@ import { Database, Globe, HardDrive, MapPin, Search } from 'lucide-react';
 import { useCopperCreekStudy } from '../../hooks/useCopperCreekStudy';
 import { MiningLoader } from '../shared/MiningLoader';
 import { FootprintMap } from './FootprintMap';
+import { ExportableTable } from '../shared/ExportableContent';
 
 type Tab = 'BLOCK_MODELS' | 'DRILLHOLES' | 'HYPERSPECTRAL' | 'PROJECTIONS_ETL';
 const panel = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm';
@@ -74,6 +75,7 @@ export function GeospatialManager() {
           </div>
           <span className="text-[10px] text-slate-500 dark:text-slate-400">Ley del modelo publicado: {model.model_name} · IDW3 solo como referencia</span>
         </div>
+        <ExportableTable title="Cubos reconstruidos" filename={`copper-creek-cubos-pagina-${currentPage}`} interpretation={`Se muestran ${paged.length} de ${filtered.length} cubos del filtro actual en la página ${currentPage}. Las leyes son estimaciones espaciales de ${model.model_name}.`} className="px-2 pb-3">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-mono">
@@ -98,6 +100,7 @@ export function GeospatialManager() {
             </tbody>
           </table>
         </div>
+        </ExportableTable>
         {selectedBlock && <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
           <strong className="text-amber-600 dark:text-amber-400">{selectedBlock.id}</strong> · {model.model_name}: {selectedBlock.cu_bayesian.toFixed(4)} %Cu · referencia IDW3: {(selectedBlock.cu_idw3 ?? selectedBlock.cu_base).toFixed(4)} %Cu · {selectedBlock.support_holes ?? '—'} sondajes de soporte.
         </div>}
